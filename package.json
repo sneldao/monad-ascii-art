@@ -1,0 +1,22 @@
+{
+  "name": "monad-ascii-art",
+  "version": "1.0.0",
+  "description": "Autonomous ASCII art generation and on-chain marketplace on Monad",
+  "type": "module",
+  "scripts": {
+    "generate": "node ascii-generator.js",
+    "deploy": "npx hardhat run scripts/deploy.js --network monadTestnet",
+    "mint": "node scripts/mint.js",
+    "agent": "node scripts/agent.js"
+  },
+  "keywords": ["monad", "ascii-art", "blockchain", "agentic-commerce", "moltiverse"],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "ethers": "^6.11.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  }
+}
