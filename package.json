@@ -4,6 +4,7 @@
   "description": "Autonomous ASCII art generation and on-chain marketplace on Monad",
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "generate": "node ascii-generator.js",
     "deploy": "npx hardhat run scripts/deploy.js --network monadTestnet",
     "mint": "node scripts/mint.js",

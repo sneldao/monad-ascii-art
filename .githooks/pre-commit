@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Pre-commit hook: block commits containing secrets
+#
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED" ] && exit 0
+
+FOUND=0
+for FILE in $STAGED; do
+  case "$FILE" in .env.example|.githooks/*) continue ;; esac
+
+  DIFF=$(git diff --cached -- "$FILE" | grep '^+' | grep -v '^+++')
+  [ -z "$DIFF" ] && continue
+
+  # Long hex strings (40+ hex chars after 0x) - catches private keys
+  MATCH=$(echo "$DIFF" | awk '/0x[0-9a-fA-F]{40,}/' | grep -v '0x3F40E0DB' | grep -v '0x3780b1f1' | grep -v '0x0000000')
+  if [ -n "$MATCH" ]; then
+    echo "BLOCKED: Possible private key in $FILE:"
+    echo "$MATCH" | head -2
+    FOUND=1
+  fi
+
+  # Secret prefixes
+  if echo "$DIFF" | grep -q 'moltbook_sk_'; then
+    echo "BLOCKED: Moltbook secret key in $FILE"
+    FOUND=1
+  fi
+  if echo "$DIFF" | grep -q 'sk_live_'; then
+    echo "BLOCKED: Live secret key in $FILE"
+    FOUND=1
+  fi
+  if echo "$DIFF" | grep -q 'sk_test_'; then
+    echo "BLOCKED: Test secret key in $FILE"
+    FOUND=1
+  fi
+
+  # PEM keys
+  if echo "$DIFF" | grep -q 'BEGIN.*PRIVATE KEY'; then
+    echo "BLOCKED: PEM private key in $FILE"
+    FOUND=1
+  fi
+done
+
+if [ $FOUND -ne 0 ]; then
+  echo ""
+  echo "Commit aborted. Remove secrets or 'git commit --no-verify' to bypass."
+  exit 1
+fi
